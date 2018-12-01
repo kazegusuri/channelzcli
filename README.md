@@ -16,13 +16,13 @@ Avaiable types:
 
 ```
 $ channelzcli -k --addr localhost:8000 list channel
-ID	Name                                                                            	Channel	SubChannel	Calls	Success	Fail	LastCall
-1	spanner.googleapis.com:443                                                      	0      	1         	3444  	3436  	8     	1m      
-2	spanner.googleapis.com:443                                                      	0      	1         	3451  	3444  	9     	34s     
-3	spanner.googleapis.com:443                                                      	0      	1         	3315  	3306  	11    	8s      
-4	spanner.googleapis.com:443                                                      	0      	1         	3724  	3714  	13    	2m      
-28	pubsub.googleapis.com:443                                                       	0      	16        	0     	0     	0     	none    
-29	pubsub.googleapis.com:443                                                       	0      	16        	40    	40    	0     	13h     
+ID	Name                                    	Channel	SubChannel	Calls	Success	Fail	LastCall
+1	spanner.googleapis.com:443              	0      	1         	3444  	3436  	8     	1m      
+2	spanner.googleapis.com:443              	0      	1         	3451  	3444  	9     	34s     
+3	spanner.googleapis.com:443              	0      	1         	3315  	3306  	11    	8s      
+4	spanner.googleapis.com:443              	0      	1         	3724  	3714  	13    	2m      
+28	pubsub.googleapis.com:443               	0      	16        	0     	0     	0     	none    
+29	pubsub.googleapis.com:443               	0      	16        	40    	40    	0     	13h     
 ```
 
 ```
