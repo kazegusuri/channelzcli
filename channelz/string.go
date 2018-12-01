@@ -6,8 +6,11 @@ import (
 	channelzpb "google.golang.org/grpc/channelz/grpc_channelz_v1"
 )
 
-func computeIndent(depth int) string {
-	return strings.Repeat(" ", depth*2)
+func decorateEmpty(s string) string {
+	if s == "" {
+		return "<none>"
+	}
+	return s
 }
 
 func prettyChannelTraceEventSeverity(s channelzpb.ChannelTraceEvent_Severity) string {

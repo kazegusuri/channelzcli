@@ -8,7 +8,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type TreeCommand struct {
+type ListCommand struct {
 	cmd  *cobra.Command
 	opts *GlobalOptions
 	addr string
@@ -16,12 +16,13 @@ type TreeCommand struct {
 	full bool
 }
 
-func NewTreeCommand(opts *GlobalOptions) *TreeCommand {
-	c := &TreeCommand{
+func NewListCommand(opts *GlobalOptions) *ListCommand {
+	c := &ListCommand{
 		cmd: &cobra.Command{
-			Use:          "tree (channel|server)",
-			Short:        "tree (channel|server)",
+			Use:          "list (channel|server)",
+			Short:        "list (channel|server)",
 			Args:         cobra.ExactArgs(1),
+			Aliases:      []string{"ls"},
 			SilenceUsage: true,
 		},
 		opts: opts,
@@ -30,11 +31,11 @@ func NewTreeCommand(opts *GlobalOptions) *TreeCommand {
 	return c
 }
 
-func (c *TreeCommand) Command() *cobra.Command {
+func (c *ListCommand) Command() *cobra.Command {
 	return c.cmd
 }
 
-func (c *TreeCommand) Run(cmd *cobra.Command, args []string) error {
+func (c *ListCommand) Run(cmd *cobra.Command, args []string) error {
 	ctx := context.Background()
 	typ := args[0]
 
@@ -48,9 +49,9 @@ func (c *TreeCommand) Run(cmd *cobra.Command, args []string) error {
 
 	switch typ {
 	case "channel":
-		cc.TreeTopChannels(ctx)
+		cc.ListTopChannels(ctx)
 	case "server":
-		cc.TreeServers(ctx)
+		cc.ListServers(ctx)
 	default:
 		c.cmd.Usage()
 		os.Exit(1)

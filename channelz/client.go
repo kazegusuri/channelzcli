@@ -161,7 +161,41 @@ func (cc *ChannelzClient) DescribeChannel(ctx context.Context, name string) {
 	}
 }
 
-func (cc *ChannelzClient) GetServers(ctx context.Context) {
+func (cc *ChannelzClient) ListServers(ctx context.Context) {
+	now := time.Now()
+
+	fmt.Printf("%s\t%s\t%s\t%s\t%s\t%s\t%s\n",
+		"ID", "Name", "LocalAddr", "Calls", "Success", "Fail", "LastCall")
+
+	cc.visitGetServers(ctx, func(server *channelzpb.Server) {
+		// see first socket only
+		var socket *channelzpb.Socket
+		if len(server.ListenSocket) > 0 {
+			res, err := cc.cc.GetSocket(ctx, &channelzpb.GetSocketRequest{SocketId: server.ListenSocket[0].SocketId})
+			if err != nil {
+				log.Fatalf("err %v\n", err)
+			}
+			socket = res.Socket
+		}
+
+		var localAddr string
+		if addr := socket.GetLocal().GetTcpipAddress(); addr != nil {
+			localAddr = fmt.Sprintf("[%v]:%v", net.IP(addr.IpAddress).String(), addr.Port)
+		}
+
+		fmt.Printf("%d\t%s\t%-12s\t%-6d\t%-6d\t%-6d\t%s\n",
+			server.Ref.ServerId,
+			decorateEmpty(server.Ref.Name),
+			decorateEmpty(localAddr),
+			server.Data.CallsStarted,
+			server.Data.CallsSucceeded,
+			server.Data.CallsFailed,
+			elapsedTimestamp(now, server.Data.LastCallStartedTimestamp),
+		)
+	})
+}
+
+func (cc *ChannelzClient) TreeServers(ctx context.Context) {
 	now := time.Now()
 	cc.visitGetServers(ctx, func(server *channelzpb.Server) {
 		fmt.Printf("ID: %v, Name: %v\n", server.Ref.ServerId, server.Ref.Name)
@@ -210,7 +244,27 @@ func (cc *ChannelzClient) visitGetServers(ctx context.Context, fn func(*channelz
 	}
 }
 
-func (cc *ChannelzClient) GetTopChannels(ctx context.Context) {
+func (cc *ChannelzClient) ListTopChannels(ctx context.Context) {
+	now := time.Now()
+
+	fmt.Printf("%s\t%-80s\t%s\t%s\t%s\t%s\t%s\t%s\n",
+		"ID", "Name", "Channel", "SubChannel", "Calls", "Success", "Fail", "LastCall")
+
+	cc.visitTopChannels(ctx, func(channel *channelzpb.Channel) {
+		fmt.Printf("%d\t%-80s\t%-7d\t%-10d\t%-6d\t%-6d\t%-6d\t%-8s\n",
+			channel.Ref.ChannelId,
+			decorateEmpty(channel.Ref.Name),
+			len(channel.ChannelRef),
+			len(channel.SubchannelRef),
+			channel.Data.CallsStarted,
+			channel.Data.CallsSucceeded,
+			channel.Data.CallsFailed,
+			elapsedTimestamp(now, channel.Data.LastCallStartedTimestamp),
+		)
+	})
+}
+
+func (cc *ChannelzClient) TreeTopChannels(ctx context.Context) {
 	now := time.Now()
 
 	cc.visitTopChannels(ctx, func(channel *channelzpb.Channel) {
