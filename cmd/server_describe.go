@@ -2,13 +2,12 @@ package cmd
 
 import (
 	"context"
-	"time"
 
 	"github.com/kazegusuri/channelzcli/channelz"
 	"github.com/spf13/cobra"
 )
 
-type ServerListCommand struct {
+type ServerDescribeCommand struct {
 	cmd  *cobra.Command
 	opts *GlobalOptions
 	addr string
@@ -16,12 +15,12 @@ type ServerListCommand struct {
 	full bool
 }
 
-func NewServerListCommand(opts *GlobalOptions) *ServerListCommand {
-	c := &ServerListCommand{
+func NewServerDescribeCommand(opts *GlobalOptions) *ServerDescribeCommand {
+	c := &ServerDescribeCommand{
 		cmd: &cobra.Command{
-			Use:          "list",
-			Short:        "List servers",
-			Args:         cobra.ExactArgs(0),
+			Use:          "describe",
+			Short:        "Describe server",
+			Args:         cobra.ExactArgs(1),
 			SilenceUsage: true,
 		},
 		opts: opts,
@@ -30,13 +29,13 @@ func NewServerListCommand(opts *GlobalOptions) *ServerListCommand {
 	return c
 }
 
-func (c *ServerListCommand) Command() *cobra.Command {
+func (c *ServerDescribeCommand) Command() *cobra.Command {
 	return c.cmd
 }
 
-func (c *ServerListCommand) Run(cmd *cobra.Command, args []string) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
+func (c *ServerDescribeCommand) Run(cmd *cobra.Command, args []string) error {
+	ctx := context.Background()
+	name := args[0]
 
 	conn, err := newGRPCConnection(ctx, c.opts.Address, c.opts.Insecure)
 	if err != nil {
@@ -45,7 +44,7 @@ func (c *ServerListCommand) Run(cmd *cobra.Command, args []string) error {
 	defer conn.Close()
 
 	cc := channelz.NewClient(conn)
-	cc.GetServers(ctx)
+	cc.DescribeServer(ctx, name)
 
 	return nil
 }

@@ -8,7 +8,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type ServerListCommand struct {
+type ChannelDescribeCommand struct {
 	cmd  *cobra.Command
 	opts *GlobalOptions
 	addr string
@@ -16,12 +16,12 @@ type ServerListCommand struct {
 	full bool
 }
 
-func NewServerListCommand(opts *GlobalOptions) *ServerListCommand {
-	c := &ServerListCommand{
+func NewChannelDescribeCommand(opts *GlobalOptions) *ChannelDescribeCommand {
+	c := &ChannelDescribeCommand{
 		cmd: &cobra.Command{
-			Use:          "list",
-			Short:        "List servers",
-			Args:         cobra.ExactArgs(0),
+			Use:          "describe",
+			Short:        "describe channel",
+			Args:         cobra.ExactArgs(1),
 			SilenceUsage: true,
 		},
 		opts: opts,
@@ -30,13 +30,14 @@ func NewServerListCommand(opts *GlobalOptions) *ServerListCommand {
 	return c
 }
 
-func (c *ServerListCommand) Command() *cobra.Command {
+func (c *ChannelDescribeCommand) Command() *cobra.Command {
 	return c.cmd
 }
 
-func (c *ServerListCommand) Run(cmd *cobra.Command, args []string) error {
+func (c *ChannelDescribeCommand) Run(cmd *cobra.Command, args []string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
+	name := args[0]
 
 	conn, err := newGRPCConnection(ctx, c.opts.Address, c.opts.Insecure)
 	if err != nil {
@@ -45,7 +46,7 @@ func (c *ServerListCommand) Run(cmd *cobra.Command, args []string) error {
 	defer conn.Close()
 
 	cc := channelz.NewClient(conn)
-	cc.GetServers(ctx)
+	cc.DescribeChannel(ctx, name)
 
 	return nil
 }

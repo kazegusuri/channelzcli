@@ -22,6 +22,7 @@ func NewServerCommand(opts *GlobalOptions) *ServerCommand {
 	}
 
 	c.cmd.AddCommand(NewServerListCommand(c.opts).Command())
+	c.cmd.AddCommand(NewServerDescribeCommand(c.opts).Command())
 	return c
 }
 

@@ -8,6 +8,19 @@ import (
 	"github.com/golang/protobuf/ptypes/timestamp"
 )
 
+func stringTimestamp(ts *timestamp.Timestamp) string {
+	if ts != nil && ts.Seconds == 0 && ts.Nanos == 0 {
+		return "none"
+	}
+
+	pt, err := ptypes.Timestamp(ts)
+	if err != nil {
+		return "none"
+	}
+
+	return pt.UTC().String()
+}
+
 func elapsedTimestamp(now time.Time, ts *timestamp.Timestamp) string {
 	if ts != nil && ts.Seconds == 0 && ts.Nanos == 0 {
 		return "none"

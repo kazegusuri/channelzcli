@@ -22,6 +22,7 @@ func NewChannelCommand(opts *GlobalOptions) *ChannelCommand {
 	}
 
 	c.cmd.AddCommand(NewChannelListCommand(c.opts).Command())
+	c.cmd.AddCommand(NewChannelDescribeCommand(c.opts).Command())
 	return c
 }
 
