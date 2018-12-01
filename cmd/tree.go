@@ -2,12 +2,13 @@ package cmd
 
 import (
 	"context"
+	"os"
 
 	"github.com/kazegusuri/channelzcli/channelz"
 	"github.com/spf13/cobra"
 )
 
-type ServerDescribeCommand struct {
+type TreeCommand struct {
 	cmd  *cobra.Command
 	opts *GlobalOptions
 	addr string
@@ -15,12 +16,13 @@ type ServerDescribeCommand struct {
 	full bool
 }
 
-func NewServerDescribeCommand(opts *GlobalOptions) *ServerDescribeCommand {
-	c := &ServerDescribeCommand{
+func NewTreeCommand(opts *GlobalOptions) *TreeCommand {
+	c := &TreeCommand{
 		cmd: &cobra.Command{
-			Use:          "describe",
-			Short:        "Describe server",
+			Use:          "tree (channel|server)",
+			Short:        "tree (channel|server)",
 			Args:         cobra.ExactArgs(1),
+			Aliases:      []string{"ls"},
 			SilenceUsage: true,
 		},
 		opts: opts,
@@ -29,13 +31,13 @@ func NewServerDescribeCommand(opts *GlobalOptions) *ServerDescribeCommand {
 	return c
 }
 
-func (c *ServerDescribeCommand) Command() *cobra.Command {
+func (c *TreeCommand) Command() *cobra.Command {
 	return c.cmd
 }
 
-func (c *ServerDescribeCommand) Run(cmd *cobra.Command, args []string) error {
+func (c *TreeCommand) Run(cmd *cobra.Command, args []string) error {
 	ctx := context.Background()
-	name := args[0]
+	typ := args[0]
 
 	conn, err := newGRPCConnection(ctx, c.opts.Address, c.opts.Insecure)
 	if err != nil {
@@ -44,7 +46,16 @@ func (c *ServerDescribeCommand) Run(cmd *cobra.Command, args []string) error {
 	defer conn.Close()
 
 	cc := channelz.NewClient(conn)
-	cc.DescribeServer(ctx, name)
+
+	switch typ {
+	case "channel":
+		cc.GetTopChannels(ctx)
+	case "server":
+		cc.GetServers(ctx)
+	default:
+		c.cmd.Usage()
+		os.Exit(1)
+	}
 
 	return nil
 }
