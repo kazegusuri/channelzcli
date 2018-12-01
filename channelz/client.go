@@ -7,7 +7,6 @@ import (
 	"net"
 	"time"
 
-	"github.com/golang/protobuf/ptypes"
 	"google.golang.org/grpc"
 	channelzpb "google.golang.org/grpc/channelz/grpc_channelz_v1"
 )
@@ -34,10 +33,7 @@ func (cc *ChannelzClient) GetServers(ctx context.Context) {
 		for _, server := range res.Server {
 			fmt.Printf("ID: %v, Name: %v\n", server.Ref.ServerId, server.Ref.Name)
 
-			elapesed := "none"
-			if lastCallTime, err := ptypes.Timestamp(server.Data.LastCallStartedTimestamp); err == nil {
-				elapesed = fmt.Sprintf("%s ago", now.Sub(lastCallTime).String())
-			}
+			elapesed := elapsedTimestamp(now, server.Data.LastCallStartedTimestamp)
 			fmt.Printf("    [Calls]: Started:%v Succeeded:%v, Failed:%v, Last:%s\n", server.Data.CallsStarted, server.Data.CallsSucceeded, server.Data.CallsFailed, elapesed)
 
 			for _, socket := range server.ListenSocket {
@@ -88,10 +84,7 @@ func (cc *ChannelzClient) GetTopChannels(ctx context.Context) {
 			// fmt.Printf("ID: %v, Name: %v\n", channel.Ref.ChannelId, channel.Ref.Name)
 			// fmt.Printf("state: %v, Target: %v\n", channel.Data.State.State.String(), channel.Data.Target)
 
-			elapesed := "none"
-			if lastCallTime, err := ptypes.Timestamp(channel.Data.LastCallStartedTimestamp); err == nil {
-				elapesed = fmt.Sprintf("%s ago", now.Sub(lastCallTime).String())
-			}
+			elapesed := elapsedTimestamp(now, channel.Data.LastCallStartedTimestamp)
 			fmt.Printf("  [Calls] Started:%v, Succeeded:%v, Failed:%v, Last:%v\n", channel.Data.CallsStarted, channel.Data.CallsSucceeded, channel.Data.CallsFailed, elapesed)
 
 			// for _, ev := range channel.Data.Trace.Events {
@@ -120,10 +113,7 @@ func (cc *ChannelzClient) GetTopChannels(ctx context.Context) {
 					subch.Data.Target, subch.Ref.SubchannelId,
 					subch.Data.State.State.String())
 
-				elapesed := "none"
-				if lastCallTime, err := ptypes.Timestamp(subch.Data.LastCallStartedTimestamp); err == nil {
-					elapesed = fmt.Sprintf("%s ago", now.Sub(lastCallTime).String())
-				}
+				elapesed := elapsedTimestamp(now, subch.Data.LastCallStartedTimestamp)
 				fmt.Printf("          [Calls]: Started:%v, Succeeded:%v, Failed:%v, Last:%s\n", subch.Data.CallsStarted, subch.Data.CallsSucceeded, subch.Data.CallsFailed, elapesed)
 
 				for _, socket := range subch.SocketRef {
