@@ -44,7 +44,7 @@ func (c *TreeCommand) Run(cmd *cobra.Command, args []string) error {
 	}
 	defer conn.Close()
 
-	cc := channelz.NewClient(conn)
+	cc := channelz.NewClient(conn, c.opts.Output)
 
 	switch typ {
 	case "channel":
