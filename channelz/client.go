@@ -256,13 +256,14 @@ func (cc *ChannelzClient) visitGetServers(ctx context.Context, fn func(*channelz
 func (cc *ChannelzClient) ListTopChannels(ctx context.Context) {
 	now := timeNow()
 
-	cc.printf("%s\t%-80s\t%s\t%s\t%s\t%s\t%s\t%s\n",
-		"ID", "Name", "Channel", "SubChannel", "Calls", "Success", "Fail", "LastCall")
+	cc.printf("%s\t%-80s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n",
+		"ID", "Name", "State", "Channel", "SubChannel", "Calls", "Success", "Fail", "LastCall")
 
 	cc.visitTopChannels(ctx, func(channel *channelzpb.Channel) {
-		cc.printf("%d\t%-80s\t%-7d\t%-10d\t%-6d\t%-6d\t%-6d\t%-8s\n",
+		cc.printf("%d\t%-80s\t%s\t%-7d\t%-10d\t%-6d\t%-6d\t%-6d\t%-8s\n",
 			channel.Ref.ChannelId,
 			decorateEmpty(channel.Ref.Name),
+			channel.Data.State.State.String(),
 			len(channel.ChannelRef),
 			len(channel.SubchannelRef),
 			channel.Data.CallsStarted,

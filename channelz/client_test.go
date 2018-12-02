@@ -169,9 +169,9 @@ func TestListChannels(t *testing.T) {
 
 	t.Run("server", func(t *testing.T) {
 		expected := `
-ID	Name                                                                            	Channel	SubChannel	Calls	Success	Fail	LastCall
-0	foo0                                                                            	0      	1         	100   	90    	10    	0ms     
-1	foo1                                                                            	0      	4         	110   	99    	11    	0ms
+ID	Name                                                                            	State	Channel	SubChannel	Calls	Success	Fail	LastCall
+0	foo0                                                                            	READY	0      	1         	100   	90    	10    	0ms     
+1	foo1                                                                            	READY	0      	4         	110   	99    	11    	0ms
 `
 		b.Reset()
 		c.ListTopChannels(ctx)
