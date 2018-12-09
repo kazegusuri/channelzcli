@@ -84,3 +84,36 @@ pubsub.googleapis.com:443 (ID:28) [READY]
           [Calls]: Started:0, Succeeded:0, Failed:0, Last:none
           [Socket] ID:11556, Name:, RemoteName:, Local:[10.0.0.2]:34142 Remote:[172.217.161.74]:443
 ```
+
+## How to run channelz server (in Go)
+
+* Use [RegisterChannelzServiceToServer](https://godoc.org/google.golang.org/grpc/channelz/service#RegisterChannelzServiceToServer) to register channelz service to gRPC server
+* Require grpc-go v1.15.0 or later
+* It's also usefull for gRPC client only application, not serving gRPC server, to expose client metrics
+
+
+```go
+import (
+	"log"
+	"net"
+
+	"google.golang.org/grpc"
+	channelzsvc "google.golang.org/grpc/channelz/service"
+	"google.golang.org/grpc/reflection"
+)
+
+func main() {
+	s := grpc.NewServer()
+	reflection.Register(s)
+	channelzsvc.RegisterChannelzServiceToServer(s)
+
+	lis, err := net.Listen("tcp", ":8000")
+	if err != nil {
+		log.Fatalf("failed to listen: %v", err)
+	}
+
+	if err := s.Serve(lis); err != nil {
+		log.Fatalf("err %v\n", err)
+	}
+}
+```
