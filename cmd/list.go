@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"fmt"
 	"os"
 
 	"github.com/kazegusuri/channelzcli/channelz"
@@ -36,12 +37,15 @@ func (c *ListCommand) Command() *cobra.Command {
 }
 
 func (c *ListCommand) Run(cmd *cobra.Command, args []string) error {
-	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
 	typ := args[0]
 
-	conn, err := newGRPCConnection(ctx, c.opts.Address, c.opts.Insecure)
+	dialCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+	conn, err := newGRPCConnection(dialCtx, c.opts.Address, c.opts.Insecure)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to connect %v: %v", c.opts.Address, err)
 	}
 	defer conn.Close()
 

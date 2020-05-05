@@ -389,7 +389,7 @@ func (cc *ChannelzClient) visitTopChannels(ctx context.Context, fn func(*channel
 		default:
 		}
 
-		ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(retry+1))
+		ctx, cancel := context.WithTimeout(ctx, 5*time.Second*time.Duration(retry+1))
 		defer cancel()
 		res, err := cc.cc.GetTopChannels(ctx, &channelzpb.GetTopChannelsRequest{StartChannelId: lastChannelID})
 		if err != nil {
@@ -399,6 +399,9 @@ func (cc *ChannelzClient) visitTopChannels(ctx context.Context, fn func(*channel
 
 		for _, channel := range res.Channel {
 			fn(channel)
+			if id := channel.GetRef().GetChannelId(); id > lastChannelID {
+				lastChannelID = id
+			}
 		}
 		if res.End {
 			break
