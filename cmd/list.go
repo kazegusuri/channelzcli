@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/kazegusuri/channelzcli/channelz"
 	"github.com/spf13/cobra"
