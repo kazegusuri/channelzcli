@@ -37,6 +37,17 @@ func (c *fakeChannelzClient) GetServers(ctx context.Context, in *channelzpb.GetS
 	}, nil
 }
 
+func (c *fakeChannelzClient) GetServer(ctx context.Context, in *channelzpb.GetServerRequest, opts ...grpc.CallOption) (*channelzpb.GetServerResponse, error) {
+	for _, s := range c.servers {
+		if in.ServerId == s.Ref.ServerId {
+			return &channelzpb.GetServerResponse{
+				Server: s,
+			}, nil
+		}
+	}
+	return nil, status.Errorf(codes.NotFound, "not found")
+}
+
 func (c *fakeChannelzClient) GetServerSockets(ctx context.Context, in *channelzpb.GetServerSocketsRequest, opts ...grpc.CallOption) (*channelzpb.GetServerSocketsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "not implemented")
 }

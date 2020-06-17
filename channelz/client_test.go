@@ -29,8 +29,8 @@ func TestDescribeServer(t *testing.T) {
 
 	t.Run("server0", func(t *testing.T) {
 		expected := `
+ID: 	0
 Name:	server0
-ServerID:	0
 Calls:
   Started:        	100
   Succeeded:      	90
@@ -51,8 +51,8 @@ Calls:
 
 	t.Run("server1", func(t *testing.T) {
 		expected := `
+ID: 	1
 Name:	server1
-ServerID:	1
 Calls:
   Started:        	110
   Succeeded:      	99
@@ -79,20 +79,20 @@ func TestDescribeChannel(t *testing.T) {
 
 	t.Run("TopChannel", func(t *testing.T) {
 		expected := `
+ID:       	0
 Name:     	foo0
-ChannelID:	0
 State:    	READY
 Target:   	foo0.test.com
 Calls:
-  Started:        	100
-  Succeeded:      	90
-  Failed:         	10
+  Started:    	100
+  Succeeded:  	90
+  Failed:     	10
   LastCallStarted:	2018-12-01 21:33:20.123456789 +0000 UTC
 Socket:   	<none>
 Channels:   	<none>
 Subchannels:
-  ID	Name	State	Start	Succeeded	Failed
-  0	bar0	READY	100	90	10
+  ID	Name	State	Start 	Succeeded	Failed
+  0	bar0	READY	100   	90      	10    
 Trace:
   NumEvents:	0
   CreationTimestamp:	none
@@ -111,23 +111,23 @@ Trace:
 
 	t.Run("TopChannelWithSubChannels", func(t *testing.T) {
 		expected := `
+ID:       	1
 Name:     	foo1
-ChannelID:	1
 State:    	READY
 Target:   	foo1.test.com
 Calls:
-  Started:        	110
-  Succeeded:      	99
-  Failed:         	11
+  Started:    	110
+  Succeeded:  	99
+  Failed:     	11
   LastCallStarted:	2018-12-01 21:33:20.123456789 +0000 UTC
 Socket:   	<none>
 Channels:   	<none>
 Subchannels:
-  ID	Name	State	Start	Succeeded	Failed
-  1	bar1	READY	110	99	11
-  2	bar2	READY	120	108	12
-  3	bar3	READY	130	117	13
-  4	bar4	READY	140	126	14
+  ID	Name	State	Start 	Succeeded	Failed
+  1	bar1	READY	110   	99      	11    
+  2	bar2	READY	120   	108     	12    
+  3	bar3	READY	130   	117     	13    
+  4	bar4	READY	140   	126     	14    
 Trace:
   NumEvents:	0
   CreationTimestamp:	none
