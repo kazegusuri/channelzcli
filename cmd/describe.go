@@ -21,8 +21,8 @@ type DescribeCommand struct {
 func NewDescribeCommand(opts *GlobalOptions) *DescribeCommand {
 	c := &DescribeCommand{
 		cmd: &cobra.Command{
-			Use:          "describe (channel|server) (NAME|ID)",
-			Short:        "describe (channel|server) (NAME|ID)",
+			Use:          "describe (channel|server|serversocket) (NAME|ID)",
+			Short:        "describe (channel|server|serversocket) (NAME|ID)",
 			Aliases:      []string{"desc"},
 			Args:         cobra.ExactArgs(2),
 			SilenceUsage: true,
@@ -58,6 +58,8 @@ func (c *DescribeCommand) Run(cmd *cobra.Command, args []string) error {
 		cc.DescribeChannel(ctx, name)
 	case "server":
 		cc.DescribeServer(ctx, name)
+	case "serversocket":
+		cc.DescribeServerSocket(ctx, name)
 	default:
 		c.cmd.Usage()
 		os.Exit(1)

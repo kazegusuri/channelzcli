@@ -21,8 +21,8 @@ type ListCommand struct {
 func NewListCommand(opts *GlobalOptions) *ListCommand {
 	c := &ListCommand{
 		cmd: &cobra.Command{
-			Use:          "list (channel|server)",
-			Short:        "list (channel|server)",
+			Use:          "list (channel|server|serversocket)",
+			Short:        "list (channel|server|serversocket)",
 			Args:         cobra.ExactArgs(1),
 			Aliases:      []string{"ls"},
 			SilenceUsage: true,
@@ -57,6 +57,8 @@ func (c *ListCommand) Run(cmd *cobra.Command, args []string) error {
 		cc.ListTopChannels(ctx)
 	case "server":
 		cc.ListServers(ctx)
+	case "serversocket":
+		cc.ListServerSockets(ctx)
 	default:
 		c.cmd.Usage()
 		os.Exit(1)

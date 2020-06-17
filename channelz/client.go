@@ -11,6 +11,8 @@ import (
 
 	"google.golang.org/grpc"
 	channelzpb "google.golang.org/grpc/channelz/grpc_channelz_v1"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 var timeNow = time.Now
@@ -38,8 +40,8 @@ func (cc *ChannelzClient) DescribeServer(ctx context.Context, name string) {
 		return
 	}
 
+	cc.printf("ID: \t%d\n", server.Ref.ServerId)
 	cc.printf("Name:\t%s\n", server.Ref.Name)
-	cc.printf("ServerID:\t%d\n", server.Ref.ServerId)
 
 	cc.printf("Calls:\n")
 	cc.printf("  Started:        \t%d\n", server.Data.CallsStarted)
@@ -102,15 +104,15 @@ func (cc *ChannelzClient) DescribeChannel(ctx context.Context, name string) {
 		return
 	}
 
+	cc.printf("ID:       \t%d\n", channel.Ref.ChannelId)
 	cc.printf("Name:     \t%s\n", channel.Ref.Name)
-	cc.printf("ChannelID:\t%d\n", channel.Ref.ChannelId)
 	cc.printf("State:    \t%s\n", channel.Data.State.State.String())
 	cc.printf("Target:   \t%s\n", channel.Data.Target)
 
 	cc.printf("Calls:\n")
-	cc.printf("  Started:        \t%d\n", channel.Data.CallsStarted)
-	cc.printf("  Succeeded:      \t%d\n", channel.Data.CallsSucceeded)
-	cc.printf("  Failed:         \t%d\n", channel.Data.CallsFailed)
+	cc.printf("  Started:    \t%d\n", channel.Data.CallsStarted)
+	cc.printf("  Succeeded:  \t%d\n", channel.Data.CallsSucceeded)
+	cc.printf("  Failed:     \t%d\n", channel.Data.CallsFailed)
 	cc.printf("  LastCallStarted:\t%s\n", stringTimestamp(channel.Data.LastCallStartedTimestamp))
 
 	if len(channel.SocketRef) == 0 {
@@ -137,7 +139,7 @@ func (cc *ChannelzClient) DescribeChannel(ctx context.Context, name string) {
 		cc.printf("Subchannels:   \t%s\n", "<none>")
 	} else {
 		cc.printf("Subchannels:\n")
-		cc.printf("  %s\t%s\t%s\t%s\t%s\t%s\n", "ID", "Name", "State", "Start", "Succeeded", "Failed")
+		cc.printf("  %s\t%s\t%s\t%-6s\t%-8s\t%-6s\n", "ID", "Name", "State", "Start", "Succeeded", "Failed")
 		for _, subchref := range channel.SubchannelRef {
 			res, err := cc.cc.GetSubchannel(ctx, &channelzpb.GetSubchannelRequest{SubchannelId: subchref.SubchannelId})
 			if err != nil {
@@ -145,7 +147,7 @@ func (cc *ChannelzClient) DescribeChannel(ctx context.Context, name string) {
 			}
 
 			subch := res.Subchannel
-			cc.printf("  %d\t%s\t%s\t%d\t%d\t%d\n",
+			cc.printf("  %d\t%s\t%s\t%-6d\t%-8d\t%-6d\n",
 				subch.Ref.SubchannelId, subch.Ref.Name, subch.Data.State.State.String(),
 				subch.Data.CallsStarted,
 				subch.Data.CallsSucceeded,
@@ -166,6 +168,68 @@ func (cc *ChannelzClient) DescribeChannel(ctx context.Context, name string) {
 				cc.printf("    %s\t%-80s\t%s\n",
 					prettyChannelTraceEventSeverity(ev.Severity), ev.Description, stringTimestamp(ev.Timestamp))
 			}
+		}
+	}
+}
+
+func (cc *ChannelzClient) findSocketByID(ctx context.Context, id int64) *channelzpb.Socket {
+	res, err := cc.cc.GetSocket(ctx, &channelzpb.GetSocketRequest{SocketId: id})
+	if err != nil {
+		if status.Code(err) == codes.NotFound {
+			return nil
+		}
+		log.Fatalf("err: %v\n", err)
+	}
+
+	return res.Socket
+}
+
+func (cc *ChannelzClient) DescribeServerSocket(ctx context.Context, name string) {
+	id, err := strconv.ParseInt(name, 10, 64)
+	if err != nil {
+		// TODO: find by name
+		cc.printf("serversocket %q not found", name)
+		return
+	}
+
+	socket := cc.findSocketByID(ctx, id)
+	if socket == nil {
+		cc.printf("serversocket %q not found", name)
+		return
+	}
+
+	cc.printf("ID:       \t%d\n", socket.Ref.SocketId)
+	cc.printf("Name:     \t%s\n", socket.Ref.Name)
+	cc.printf("Local:    \t%s\n", addrToString(socket.Local))
+	cc.printf("Remote:   \t%s\n", addrToString(socket.Remote))
+
+	cc.printf("Streams:\n")
+	cc.printf("  Started:    \t%d\n", socket.Data.StreamsStarted)
+	cc.printf("  Succeeded:  \t%d\n", socket.Data.StreamsSucceeded)
+	cc.printf("  Failed:     \t%d\n", socket.Data.StreamsFailed)
+	cc.printf("  LastCreated:\t%s\n", stringTimestamp(socket.Data.LastRemoteStreamCreatedTimestamp))
+
+	cc.printf("Messages:\n")
+	cc.printf("  Sent:    \t%d\n", socket.Data.MessagesSent)
+	cc.printf("  Recieved:  \t%d\n", socket.Data.MessagesReceived)
+	cc.printf("  LastSent:\t%s\n", stringTimestamp(socket.Data.LastMessageSentTimestamp))
+	cc.printf("  LastReceived:\t%s\n", stringTimestamp(socket.Data.LastMessageReceivedTimestamp))
+
+	cc.printf("Options:\n")
+	for _, opt := range socket.Data.Option {
+		cc.printf("  %s:\t%s\n", opt.Name, opt.Value)
+	}
+
+	cc.printf("Security:\n")
+	if socket.Security == nil {
+		cc.printf("  Model: none\n")
+	} else {
+
+		switch socket.Security.GetModel().(type) {
+		case *channelzpb.Security_Tls_:
+			cc.printf("  Model: tls\n")
+		case *channelzpb.Security_Other:
+			cc.printf("  Model: other\n")
 		}
 	}
 }
@@ -274,6 +338,67 @@ func (cc *ChannelzClient) ListTopChannels(ctx context.Context) {
 	})
 }
 
+func addrToString(addr *channelzpb.Address) string {
+	if tcpaddr := addr.GetTcpipAddress(); tcpaddr != nil {
+		return fmt.Sprintf("[%v]:%v", net.IP(tcpaddr.IpAddress).String(), tcpaddr.Port)
+	}
+	return ""
+}
+
+func (cc *ChannelzClient) ListServerSockets(ctx context.Context) {
+	now := timeNow()
+
+	cc.printf("%s\t%s\t%-40s\t%-20s\t%-20s\t%-20s\t%s\t%s\t%s\t%s\n",
+		"ID", "ServerID", "Name", "RemoteName", "Local", "Remote", "Started", "Success", "Fail", "LastStream")
+
+	cc.visitGetServers(ctx, func(server *channelzpb.Server) {
+		cc.visitGetServerSockets(ctx, server.Ref.ServerId, func(socket *channelzpb.Socket) {
+			localIP := addrToString(socket.Local)
+			remoteIP := addrToString(socket.Remote)
+
+			cc.printf("%d\t%-8d\t%-40s\t%-20s\t%-16s\t%-16s\t%-6d\t%-6d\t%-6d\t%-8s\n",
+				socket.Ref.SocketId,
+				server.Ref.ServerId,
+				decorateEmpty(socket.Ref.Name),
+				decorateEmpty(socket.RemoteName),
+				decorateEmpty(localIP),
+				decorateEmpty(remoteIP),
+				socket.Data.StreamsStarted,
+				socket.Data.StreamsSucceeded,
+				socket.Data.StreamsFailed,
+				elapsedTimestamp(now, socket.Data.LastRemoteStreamCreatedTimestamp),
+			)
+		})
+	})
+}
+
+func (cc *ChannelzClient) visitGetServerSockets(ctx context.Context, id int64, fn func(*channelzpb.Socket)) {
+	lastSocketID := int64(0)
+	for {
+		res, err := cc.cc.GetServerSockets(ctx, &channelzpb.GetServerSocketsRequest{
+			ServerId:      id,
+			StartSocketId: lastSocketID,
+		})
+		if err != nil {
+			log.Fatalf("err: %v\n", err)
+		}
+
+		for _, ref := range res.SocketRef {
+			socket, err := cc.cc.GetSocket(ctx, &channelzpb.GetSocketRequest{SocketId: ref.SocketId})
+			if err != nil {
+				log.Fatalf("err %v\n", err)
+			}
+
+			fn(socket.Socket)
+		}
+		if res.End {
+			break
+		}
+
+		lastSocketID++
+	}
+}
+
 func (cc *ChannelzClient) TreeTopChannels(ctx context.Context) {
 	now := timeNow()
 
@@ -281,8 +406,6 @@ func (cc *ChannelzClient) TreeTopChannels(ctx context.Context) {
 		cc.printf("%s (ID:%d) [%s]\n",
 			channel.Data.Target, channel.Ref.ChannelId,
 			channel.Data.State.State.String())
-		// cc.printf("ID: %v, Name: %v\n", channel.Ref.ChannelId, channel.Ref.Name)
-		// cc.printf("state: %v, Target: %v\n", channel.Data.State.State.String(), channel.Data.Target)
 
 		elapesed := elapsedTimestamp(now, channel.Data.LastCallStartedTimestamp)
 		cc.printf("  [Calls] Started:%v, Succeeded:%v, Failed:%v, Last:%v\n", channel.Data.CallsStarted, channel.Data.CallsSucceeded, channel.Data.CallsFailed, elapesed)
