@@ -100,7 +100,7 @@ func (cc *ChannelzClient) findServerByID(ctx context.Context, id int64) *channel
 func (cc *ChannelzClient) DescribeChannel(ctx context.Context, name string) {
 	channel := cc.findTopChannel(ctx, name)
 	if channel == nil {
-		cc.printf("channel %q not found", name)
+		cc.printf("channel %q not found\n", name)
 		return
 	}
 
@@ -188,13 +188,13 @@ func (cc *ChannelzClient) DescribeServerSocket(ctx context.Context, name string)
 	id, err := strconv.ParseInt(name, 10, 64)
 	if err != nil {
 		// TODO: find by name
-		cc.printf("serversocket %q not found", name)
+		cc.printf("serversocket %q not found\n", name)
 		return
 	}
 
 	socket := cc.findSocketByID(ctx, id)
 	if socket == nil {
-		cc.printf("serversocket %q not found", name)
+		cc.printf("serversocket %q not found\n", name)
 		return
 	}
 

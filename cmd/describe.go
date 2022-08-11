@@ -45,7 +45,7 @@ func (c *DescribeCommand) Run(cmd *cobra.Command, args []string) error {
 
 	dialCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
-	conn, err := newGRPCConnection(dialCtx, c.opts.Address, c.opts.Insecure)
+	conn, err := newGRPCConnection(dialCtx, c.opts.Address, c.opts.Insecure, c.opts.TLSData)
 	if err != nil {
 		return fmt.Errorf("failed to connect %v: %v", c.opts.Address, err)
 	}
