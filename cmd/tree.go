@@ -38,7 +38,7 @@ func (c *TreeCommand) Run(cmd *cobra.Command, args []string) error {
 	ctx := context.Background()
 	typ := args[0]
 
-	conn, err := newGRPCConnection(ctx, c.opts.Address, c.opts.Insecure)
+	conn, err := newGRPCConnection(ctx, c.opts.Address, c.opts.Insecure, c.opts.TLSData)
 	if err != nil {
 		return err
 	}
