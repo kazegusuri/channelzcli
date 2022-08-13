@@ -5,12 +5,11 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/golang/protobuf/ptypes"
-	"github.com/golang/protobuf/ptypes/timestamp"
 	"google.golang.org/grpc"
 	channelzpb "google.golang.org/grpc/channelz/grpc_channelz_v1"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 var _ channelzpb.ChannelzClient = (*fakeChannelzClient)(nil)
@@ -94,7 +93,7 @@ var (
 
 type channelParam struct {
 	state                    channelzpb.ChannelConnectivityState_State
-	lastCallStartedTimestamp *timestamp.Timestamp
+	lastCallStartedTimestamp *timestamppb.Timestamp
 	chRef                    []*channelzpb.ChannelRef
 	subchRef                 []*channelzpb.SubchannelRef
 	sockRef                  []*channelzpb.SocketRef
@@ -108,7 +107,7 @@ type socketParam struct {
 }
 
 type serverParam struct {
-	lastCallStartedTimestamp *timestamp.Timestamp
+	lastCallStartedTimestamp *timestamppb.Timestamp
 	sockRef                  []*channelzpb.SocketRef
 }
 
@@ -229,7 +228,7 @@ var (
 
 func init() {
 	now := fixedTime
-	ts1, _ := ptypes.TimestampProto(now)
+	ts1 := timestamppb.New(now)
 
 	srvsock1 := testCreateSocket(socketParam{
 		localIP:   net.IPv4(127, 0, 1, 2),
