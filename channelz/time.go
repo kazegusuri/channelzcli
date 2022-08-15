@@ -4,34 +4,23 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/golang/protobuf/ptypes"
-	"github.com/golang/protobuf/ptypes/timestamp"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-func stringTimestamp(ts *timestamp.Timestamp) string {
+func stringTimestamp(ts *timestamppb.Timestamp) string {
 	if ts != nil && ts.Seconds == 0 && ts.Nanos == 0 {
 		return "none"
 	}
 
-	pt, err := ptypes.Timestamp(ts)
-	if err != nil {
-		return "none"
-	}
-
-	return pt.UTC().String()
+	return ts.AsTime().UTC().String()
 }
 
-func elapsedTimestamp(now time.Time, ts *timestamp.Timestamp) string {
+func elapsedTimestamp(now time.Time, ts *timestamppb.Timestamp) string {
 	if ts != nil && ts.Seconds == 0 && ts.Nanos == 0 {
 		return "none"
 	}
 
-	pt, err := ptypes.Timestamp(ts)
-	if err != nil {
-		return "none"
-	}
-
-	return prettyDuration(now.Sub(pt))
+	return prettyDuration(now.Sub(ts.AsTime()))
 }
 
 func prettyDuration(d time.Duration) string {
