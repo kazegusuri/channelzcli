@@ -7,6 +7,7 @@ import (
 	"log"
 	"net"
 	"strconv"
+	"text/tabwriter"
 	"time"
 
 	"google.golang.org/grpc"
@@ -19,14 +20,21 @@ var timeNow = time.Now
 
 type ChannelzClient struct {
 	cc channelzpb.ChannelzClient
-	w  io.Writer
+	w  *tabwriter.Writer
 }
 
 func NewClient(conn *grpc.ClientConn, w io.Writer) *ChannelzClient {
 	return &ChannelzClient{
 		cc: channelzpb.NewChannelzClient(conn),
-		w:  w,
+		w:  tabwriter.NewWriter(w, 0, 8, 1, '\t', tabwriter.AlignRight),
 	}
+}
+
+func (cc *ChannelzClient) Flush() error {
+	if cc.w != nil {
+		return cc.w.Flush()
+	}
+	return nil
 }
 
 func (cc *ChannelzClient) printf(format string, a ...interface{}) (n int, err error) {
